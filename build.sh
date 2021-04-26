@@ -63,21 +63,24 @@ function prep {
 	"
 	DEPS="$TOOLS $(printf '%s-devel ' $LIBS)"
 	
+	# temporarily enable manual error handling to ensure unmount on error
+	set +e	
+
+	# setup chroot
+	MOUNTS="proc dev run"
+	for MNT in $MOUNTS; do
+		mkdir -p $DIR/$MNT
+		mount -o bind /$MNT $DIR/$MNT
+	done
+
 	# install dependencies
 	zypper \
 		--non-interactive \
 		--gpg-auto-import-keys \
 		--installroot $DIR \
-		install $DEPS
+		install $DEPS &&
+	chroot $DIR update-ca-certificates &&
 	
-	# setup chroot
-	MOUNTS="proc dev run"
-	for MNT in $MOUNTS; do
-		mount -o bind /$MNT $DIR/$MNT
-	done
-	set +e
-	chroot $DIR update-ca-certificates
-
 	# start build
 	STEP=build chroot $DIR su -l -w STEP -c /${0##*/} $OWNER
 	RET=$?
