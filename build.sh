@@ -108,7 +108,7 @@ function build {
 		cd oni2
 	fi
 	npm install -g node-gyp
-	node-gyp add 14.15.4
+	node-gyp install 14.15.4
 	node install-node-deps.js
 
 	# build project
